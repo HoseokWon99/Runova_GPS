@@ -36,8 +36,10 @@ export class CoursesService {
             .insert()
             .into(Course)
             .values({
-                userId, length, timeRequired,
+                userId,
                 path: () => wkt,
+                length,
+                timeRequired,
             })
             .updateEntity(false)
             .returning("id")
