@@ -5,11 +5,9 @@ import { Coordinates } from "../../common/geo";
 import { plainToInstanceOrReject } from "../../utils";
 import { ConfigService } from "@nestjs/config";
 import { SimplifyPathResult } from "../dto";
-import { SimplifyPathCommand } from "./simplify.path.command";
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 
-@CommandHandler(SimplifyPathCommand)
-export class SimplifyPathCommandHandler implements ICommandHandler<SimplifyPathCommand> {
+@Injectable()
+export class SimplifyPathService {
     private readonly _tol: number;
 
     constructor(
@@ -23,7 +21,7 @@ export class SimplifyPathCommandHandler implements ICommandHandler<SimplifyPathC
         ) ?? 0.000008;
     }
 
-    async execute({ path }: SimplifyPathCommand): Promise<SimplifyPathResult> {
+    async simplify(path: Coordinates[]): Promise<SimplifyPathResult> {
 
         const raw = await this._ds
             .createQueryBuilder()
