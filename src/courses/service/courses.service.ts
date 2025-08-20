@@ -47,7 +47,7 @@ export class CoursesService {
            id: generatedMaps[0].id
        });
 
-       this._eventBus.publish(new CourseCreatedEvent(course.id, course.path));
+       this._eventBus.publish(new CourseCreatedEvent(course.id));
        return __toDTO(course);
     }
 
