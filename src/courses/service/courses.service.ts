@@ -5,12 +5,11 @@ import { In, Repository } from "typeorm";
 import { CourseDTO, GetCoursesDTO } from "../dto";
 import { Coordinates } from "../../common/geo";
 import { Transactional } from "typeorm-transactional";
-import { SimplifyPathService } from "./simplify.path.service";
-import { EventBus } from "@nestjs/cqrs";
+import { EventBus, QueryBus } from "@nestjs/cqrs";
 import { EstimateTimeService } from "./estimate.time.service";
 import { omit } from "../../utils/object";
 import { CourseCreatedEvent } from "../event";
-
+import { SimplifyPathQuery } from "../query";
 
 @Injectable()
 export class CoursesService {
@@ -18,17 +17,17 @@ export class CoursesService {
     constructor(
         @InjectRepository(Course)
         private readonly _coursesRepo: Repository<Course>,
-        @Inject(SimplifyPathService)
-        private readonly _simplifyPathService: SimplifyPathService,
         @Inject(EstimateTimeService)
         private readonly _estimateTimeService: EstimateTimeService,
+        @Inject(QueryBus)
+        private readonly _queryBus: QueryBus,
         @Inject(EventBus)
         private readonly _eventBus: EventBus,
     ) {}
 
     @Transactional()
     async createCourse(userId: number, path: Coordinates[]): Promise<CourseDTO> {
-        const { path: wkt, length } = await this._simplifyPathService.simplify(path);
+        const { path: wkt, length } = await this._queryBus.execute(new SimplifyPathQuery(path));
         const timeRequired = this._estimateTimeService.estimateTime(length);
 
         const { generatedMaps } = await this._coursesRepo

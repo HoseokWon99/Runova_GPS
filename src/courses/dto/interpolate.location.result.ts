@@ -2,14 +2,14 @@ import { IsNumber } from "class-validator";
 import { Type } from "class-transformer";
 import { Coordinates } from "../../common/geo";
 
-export class InterpolateLocationQueryResult {
-    // 진행률, 0 ~ 1 사이의 실수
+export class InterpolateLocationResult {
+    // 보간점의 상대 위치 (0 ~ 1 사이의 실수)
     @IsNumber()
-    frac: number;
+    progress: number;
 
-    // 보간점 (현재 위치와 가장 가까운 경로 위의 점)
+    // 보간점의 좌표
     @Type(() => Coordinates)
-    interpolated: Coordinates;
+    location: Coordinates;
 
     // 거리 오차 <=> 실제 위치와 보간점 사이의 거리
     @IsNumber()

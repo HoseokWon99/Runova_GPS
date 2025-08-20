@@ -1,13 +1,15 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { Coordinates } from "../../common/geo";
 import { plainToInstanceOrReject } from "../../utils";
 import { ConfigService } from "@nestjs/config";
 import { SimplifyPathResult } from "../dto";
+import { QueryHandler } from "@nestjs/cqrs";
+import { SimplifyPathQuery } from "./simplify.path.query";
 
-@Injectable()
-export class SimplifyPathService {
+@QueryHandler(SimplifyPathQuery)
+export class SimplifyPathQueryHandler {
     private readonly _tol: number;
 
     constructor(
@@ -21,7 +23,8 @@ export class SimplifyPathService {
         ) ?? 0.000008;
     }
 
-    async simplify(path: Coordinates[]): Promise<SimplifyPathResult> {
+    async execute(query: SimplifyPathQuery): Promise<SimplifyPathResult> {
+        const { path } = query;
 
         const raw = await this._ds
             .createQueryBuilder()

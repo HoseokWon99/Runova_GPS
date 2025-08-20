@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { InterpolateLocationQuery } from "./interpolate.location.query";
-import { InterpolateLocationQueryResult } from "./interpolate.location.query.result";
+import { InterpolateLocationResult } from "../dto";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { Course } from "../model";
 import { DataSource, SelectQueryBuilder } from "typeorm";
@@ -14,12 +14,11 @@ export class InterpolateLocationQueryHandler
     constructor(
        @InjectDataSource()
        private readonly _ds: DataSource,
-
     ) {}
 
     async execute(
         query: InterpolateLocationQuery
-    ): Promise<InterpolateLocationQueryResult> {
+    ): Promise<InterpolateLocationResult> {
         const { courseId, location } = query;
 
         const qb = this._ds
@@ -28,7 +27,7 @@ export class InterpolateLocationQueryHandler
                 `SELECT ST_SetSRID(ST_MakePoint(:lon, :lat), 4326) AS geom`,
                 "curr"
             )
-            .select("f.frac", "frac")
+            .select("p.progress", "progress")
             .addSelect(
                 `
                 jsonb_build_object(
@@ -55,7 +54,7 @@ export class InterpolateLocationQueryHandler
             .innerJoin(Course, "course", "course.id = :id");
 
         qb.innerJoin(
-                `LATERAL (${__makeSelectFracClause(qb)})`,
+                `LATERAL (${__makeSelectProgressClause(qb)})`,
             "f"
         );
 
@@ -71,18 +70,18 @@ export class InterpolateLocationQueryHandler
         if (!raw) throw new NotFoundException();
 
         return plainToInstanceOrReject(
-            InterpolateLocationQueryResult,
+            InterpolateLocationResult,
             raw
         );
     }
 
 }
 
-function __makeSelectFracClause(qb: SelectQueryBuilder<any>): string {
+function __makeSelectProgressClause(qb: SelectQueryBuilder<any>): string {
     return qb.subQuery()
         .select(
             `ST_LineInterpolatePoint(course.path, curr.geom)`,
-            "frac"
+            "progress"
         ).getQuery();
 }
 

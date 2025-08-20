@@ -1,8 +1,8 @@
 import { Query } from "@nestjs/cqrs";
-import { InterpolateLocationQueryResult } from "./interpolate.location.query.result";
+import { InterpolateLocationResult } from "../dto";
 import { Coordinates } from "../../common/geo";
 
-export class InterpolateLocationQuery extends Query<InterpolateLocationQueryResult> {
+export class InterpolateLocationQuery extends Query<InterpolateLocationResult> {
     constructor(
         public readonly courseId: number,
         public readonly location: Coordinates,
